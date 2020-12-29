@@ -1,0 +1,63 @@
+name: Generate API
+#on:
+  #schedule:
+  #  - cron: '0 0 * * *'
+jobs:
+  get-api-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+          uses: actions/checkout@v1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+
+      - id: set-matrix
+        name: Generate API versions matrix
+        run: echo "::set-output name=matrix::$(vendor/bin/k8s-api api-versions)"
+  generate-api:
+    needs: get-api-versions
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.get-api-versions.outputs.matrix)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Generate API for version ${{ matrix.api-version }}
+        run: vendor/bin/k8s-api generate --api-version ${{ matrix.api-version }}
+
+      - name: Run static analysis
+        run: composer analyse

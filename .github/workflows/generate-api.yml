@@ -36,6 +36,11 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.get-api-versions.outputs.matrix)}}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          ref: master
+
       - name: Determine API branch information for ${{ matrix.api-version }}
         id: api-branch
         env:
@@ -53,11 +58,6 @@ jobs:
       - name: Create Branch if Needed
         if: ${{ steps.api-branch.outputs.exists == 'no' }}
         run: echo Need to create a branch...
-
-      - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          ref: ${{ steps.api-branch.outputs.branch }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

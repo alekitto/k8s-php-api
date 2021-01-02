@@ -36,8 +36,16 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.get-api-versions.outputs.matrix)}}
     steps:
+      - name: Determine branch name for ${{ matrix.api-version }}
+        id: api-branch
+        env:
+          API_VERSION: ${{ matrix.api-version }}
+        run: echo "::set-output name=branch::$(echo ${api_v%.*}.x)"
+
       - name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: ${{ steps.api-branch.outputs.branch }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

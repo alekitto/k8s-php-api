@@ -4,5 +4,3 @@ parameters:
     level: 6
     paths:
         - src
-    ignoreErrors:
-        - '#is not subtype of native type iterable.#'

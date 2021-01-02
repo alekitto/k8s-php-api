@@ -18,7 +18,7 @@
         "k8s/core": "^1.0"
     },
     "require-dev": {
-        "k8s/api-generator": "^0.2.0",
+        "k8s/api-generator": "~0.2",
         "friendsofphp/php-cs-fixer": "^2.0",
         "phpstan/phpstan": "^0.12"
     },

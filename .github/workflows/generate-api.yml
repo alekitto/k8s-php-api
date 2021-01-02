@@ -50,9 +50,9 @@ jobs:
           remote_exists=$(git ls-remote --heads origin ${{ steps.api-branch.outputs.branch }})
 
           if [[ -z ${remote_exists} ]]; then
-              echo "::set-output name=exists::$(echo no)"
-          else
               echo "::set-output name=exists::$(echo yes)"
+          else
+              echo "::set-output name=exists::$(echo no)"
           fi
 
       - name: Create Branch if Needed

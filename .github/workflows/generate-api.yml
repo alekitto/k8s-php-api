@@ -32,7 +32,7 @@ jobs:
       - name: Install Composer dependencies
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: 15
+          timeout_seconds: 180
           max_attempts: 3
           retry_on: error
           command: composer install --no-progress --prefer-dist --optimize-autoloader
@@ -99,7 +99,7 @@ jobs:
       - name: Install Composer dependencies
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: 15
+          timeout_seconds: 180
           max_attempts: 3
           retry_on: error
           command: composer install --no-progress --prefer-dist

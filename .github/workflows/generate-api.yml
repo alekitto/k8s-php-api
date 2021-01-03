@@ -53,11 +53,12 @@ jobs:
           if [[ -z ${remote_exists} ]]; then
               echo "::set-output name=create::$(echo 1)"
           fi
-          echo $(git ls-remote --heads origin $BRANCH_NAME)
 
       - name: Create Branch if Needed
         if: steps.api-branch.outputs.create
-        run: echo Need to create a branch...
+        run: |
+          git checkout -b ${{ steps.api-branch.outputs.branch }}
+          git push origin ${{ steps.api-branch.outputs.branch }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

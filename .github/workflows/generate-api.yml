@@ -122,7 +122,25 @@ jobs:
           author_name: Chad Sikorra
           author_email: Chad.Sikorra@gmail.com
           branch: ${{ steps.api-branch.outputs.branch }}
-          tag: -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code"
           message: 'Auto-generate API code.'
           add: '["src", ".k8s-api.json"]'
           push: true
+
+      - name: Checkout branch with new commits
+        if: steps.commit-changes.outputs.committed
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.api-branch.outputs.branch }}
+
+      - name: Tag branch if needed
+        if: steps.commit-changes.outputs.committed
+        uses: peterjgrainger/action-create-branch@v2.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: ${{ steps.api-branch.outputs.branch }}
+        run: |
+          git config ChadSikorra github-actions
+          git config user.email Chad.Sikorra@gmail.com
+          git tag -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code"
+          git push --follow-tags

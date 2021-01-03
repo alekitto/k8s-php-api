@@ -111,6 +111,9 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Merge changes from master
+        run: git merge origin/master
+
       - name: Generate API for version ${{ matrix.api-version }}
         id: code-generation
         run: |

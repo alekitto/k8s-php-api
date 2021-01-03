@@ -111,8 +111,12 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Merge changes from master
-        run: git merge origin/master
+      - name: Merge master into API version branch
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: master
+          target_branch: ${{ steps.api-branch.outputs.branch }}
 
       - name: Generate API for version ${{ matrix.api-version }}
         id: code-generation

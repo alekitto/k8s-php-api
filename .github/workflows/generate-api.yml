@@ -122,7 +122,7 @@ jobs:
           author_name: Chad Sikorra
           author_email: Chad.Sikorra@gmail.com
           branch: ${{ steps.api-branch.outputs.branch }}
-          message: 'Auto-generate API code.'
+          message: Auto-generate API code for ${{ matrix.api-version }}.
           add: '["src", ".k8s-api.json"]'
           push: true
 
@@ -134,8 +134,10 @@ jobs:
 
       - name: Tag branch if needed
         if: steps.commit-changes.outputs.committed
+        env:
+          API_VERSION: ${{ matrix.api-version }}
         run: |
           git config user.name ChadSikorra
           git config user.email Chad.Sikorra@gmail.com
-          git tag -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code"
+          git tag -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code for $API_VERSION"
           git push --follow-tags

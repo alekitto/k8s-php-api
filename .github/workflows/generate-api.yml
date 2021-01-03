@@ -113,10 +113,24 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Merge changes from master
+        id: master-merge
         run: |
           git config user.name ChadSikorra
           git config user.email Chad.Sikorra@gmail.com
           git merge origin/master
+          MERGE_CHANGES=$(git cherry -v)
+          if [[ ! -z $MERGE_CHANGES ]]; then
+              echo "::set-output name=merged::$(echo true)"
+              git push
+          else
+              echo "::set-output name=merged::$(echo false)"
+          fi
+
+      - name: Checkout
+        if: steps.master-merge.outputs.merged == 'true'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.api-branch.outputs.branch }}
 
       - name: Generate API for version ${{ matrix.api-version }}
         id: code-generation

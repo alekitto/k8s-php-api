@@ -57,7 +57,7 @@ jobs:
           fi
 
       - name: Create Branch if Needed
-        if: ${{ steps.api-branch.outputs.exists == 'no' }}
+        if: steps.api-branch.outputs.exists == 'yes'
         run: echo Need to create a branch...
 
       - name: Setup PHP

@@ -134,9 +134,6 @@ jobs:
 
       - name: Tag branch if needed
         if: steps.commit-changes.outputs.committed
-        uses: peterjgrainger/action-create-branch@v2.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           branch: ${{ steps.api-branch.outputs.branch }}
         run: |

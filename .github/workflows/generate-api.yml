@@ -1,4 +1,4 @@
-name: Generate API
+name: generate-api
 on:
   push:
     branches:

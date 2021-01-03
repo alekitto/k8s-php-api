@@ -41,7 +41,7 @@ jobs:
       matrix: ${{fromJson(needs.get-api-versions.outputs.matrix)}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           ref: master
 
@@ -68,7 +68,7 @@ jobs:
           branch: ${{ steps.api-branch.outputs.branch }}
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           ref: ${{ steps.api-branch.outputs.branch }}
 

@@ -99,7 +99,5 @@ jobs:
           author_name: Chad Sikorra
           author_email: Chad.Sikorra@gmail.com
           message: 'Auto-generate API code.'
-          add:
-            - 'src'
-            - '.k8s-api.json'
+          add: '["src", ".k8s-api.json"]'
           push: false

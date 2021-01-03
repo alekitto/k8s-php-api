@@ -1,5 +1,8 @@
 name: Generate API
 on:
+  push:
+    branches:
+      - master
   schedule:
     - cron: '0 0 * * *'
 env:
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: master
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -123,13 +128,13 @@ jobs:
           push: true
 
       - name: Checkout branch with new commits
-        if: steps.commit-changes.outputs.committed
+        if: steps.commit-changes.outputs.committed == 'true'
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.api-branch.outputs.branch }}
 
       - name: Tag branch if needed
-        if: steps.commit-changes.outputs.committed
+        if: steps.commit-changes.outputs.committed == 'true'
         env:
           API_VERSION: ${{ matrix.api-version }}
         run: |

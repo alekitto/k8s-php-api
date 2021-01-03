@@ -101,12 +101,22 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Generate API for version ${{ matrix.api-version }}
-        run: vendor/bin/k8s-api generate --api-version ${{ matrix.api-version }}
+        id: code-generation
+        run: |
+          output=$(vendor/bin/k8s-api generate --api-version ${{ matrix.api-version }})
+          echo $output
+          if echo "$output" | grep -q "Not generating API for version"; then
+              echo "::set-output name=generated::$(echo false)"
+          else
+              echo "::set-output name=generated::$(echo true)"
+          fi
 
       - name: Run static analysis
+        if: steps.code-generation.outputs.generated == 'true'
         run: composer analyse
 
       - name: Generate version tag
+        if: steps.code-generation.outputs.generated == 'true'
         id: version-tag
         env:
           INITIAL_TAG: ${{ steps.api-branch.outputs.initial_tag }}
@@ -124,6 +134,7 @@ jobs:
           fi
 
       - name: Commit changes
+        if: steps.code-generation.outputs.generated == 'true'
         id: commit-changes
         uses: EndBug/add-and-commit@v6
         with:

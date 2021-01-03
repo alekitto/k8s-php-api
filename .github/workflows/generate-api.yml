@@ -101,18 +101,20 @@ jobs:
       - name: Generate version tag
         id: version-tag
         env:
-          INITIAL_TAG: ${{ steps.api-branch.outputs.branch }}
+          INITIAL_TAG: ${{ steps.api-branch.outputs.initial_tag }}
           BRANCH_NAME: ${{ steps.api-branch.outputs.branch }}
         run: |
           HAS_TAGS=$(git tag --sort='creatordate' --merged origin/$BRANCH_NAME)
           if [[ -z $HAS_TAGS ]]; then
               echo "::set-output name=tag::$(echo $INITIAL_TAG)"
+              echo $INITIAL_TAG
           else
               CURRENT_TAG=$(git describe --abbrev=0)
               PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
               MAJOR_MINOR=${CURRENT_TAG%%$n}
               NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
               echo "::set-output name=tag::$(echo $NEW_TAG)"
+              echo $NEW_TAG
           fi
 
       - name: Commit changes

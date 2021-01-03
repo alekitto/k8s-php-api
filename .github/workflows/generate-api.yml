@@ -112,6 +112,7 @@ jobs:
               NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
               echo "::set-output name=tag::$(echo $NEW_TAG)"
           fi
+          ls /
 
       - name: Commit changes
         id: commit-changes

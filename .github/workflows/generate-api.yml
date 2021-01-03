@@ -47,12 +47,13 @@ jobs:
         env:
           API_VERSION: ${{ matrix.api-version }}
         run: |
-          echo "::set-output name=branch::$(echo ${API_VERSION%.*}.x)"
-          remote_exists=$(git ls-remote --heads origin ${{ steps.api-branch.outputs.branch }})
+          BRANCH_NAME="${API_VERSION%.*}.x"
+          echo "::set-output name=branch::$(echo $BRANCH_NAME)"
+          remote_exists=$(git ls-remote --heads origin $BRANCH_NAME)
           if [[ -z ${remote_exists} ]]; then
               echo "::set-output name=create::$(echo 1)"
           fi
-          echo $(git ls-remote --heads origin ${{ steps.api-branch.outputs.branch }})
+          echo $(git ls-remote --heads origin $BRANCH_NAME)
 
       - name: Create Branch if Needed
         if: steps.api-branch.outputs.create

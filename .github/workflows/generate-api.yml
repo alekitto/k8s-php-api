@@ -52,6 +52,7 @@ jobs:
           if [[ -z ${remote_exists} ]]; then
               echo "::set-output name=create::$(echo 1)"
           fi
+          echo $(git ls-remote --heads origin ${{ steps.api-branch.outputs.branch }})
 
       - name: Create Branch if Needed
         if: steps.api-branch.outputs.create

@@ -97,6 +97,7 @@ jobs:
         run: composer analyse
 
       - name: Commit changes
+        id: commit-changes
         uses: EndBug/add-and-commit@v6
         with:
           author_name: Chad Sikorra
@@ -104,3 +105,7 @@ jobs:
           message: 'Auto-generate API code.'
           add: '["src", ".k8s-api.json"]'
           push: false
+
+      - name: Bump version and push tag
+        if: steps.commit-changes.outputs.committed
+        run: echo todo

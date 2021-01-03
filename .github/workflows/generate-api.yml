@@ -1,5 +1,8 @@
 name: Generate API
-on: [push]
+on:
+  push:
+    branches:
+      - master
 #on:
   #schedule:
   #  - cron: '0 0 * * *'

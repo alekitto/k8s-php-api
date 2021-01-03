@@ -49,15 +49,12 @@ jobs:
         run: |
           echo "::set-output name=branch::$(echo ${API_VERSION%.*}.x)"
           remote_exists=$(git ls-remote --heads origin ${{ steps.api-branch.outputs.branch }})
-
           if [[ -z ${remote_exists} ]]; then
-              echo "::set-output name=exists::$(echo yes)"
-          else
-              echo "::set-output name=exists::$(echo no)"
+              echo "::set-output name=create::$(echo 1)"
           fi
 
       - name: Create Branch if Needed
-        if: steps.api-branch.outputs.exists == 'yes'
+        if: steps.api-branch.outputs.create
         run: echo Need to create a branch...
 
       - name: Setup PHP

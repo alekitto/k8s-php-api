@@ -114,6 +114,8 @@ jobs:
 
       - name: Merge changes from master
         run: |
+          git config user.name ChadSikorra
+          git config user.email Chad.Sikorra@gmail.com
           git merge origin/master
 
       - name: Generate API for version ${{ matrix.api-version }}

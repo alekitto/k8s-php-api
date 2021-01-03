@@ -53,7 +53,7 @@ jobs:
           BRANCH_NAME="${API_VERSION%.*}.x"
           INITIAL_TAG="${API_VERSION%.*}.0"
           echo "::set-output name=branch::$(echo $BRANCH_NAME)"
-          echo "::set-output name=initial_tag::$(echo INITIAL_TAG)"
+          echo "::set-output name=initial_tag::$(echo $INITIAL_TAG)"
           remote_exists=$(git ls-remote --heads origin $BRANCH_NAME)
           if [[ -z ${remote_exists} ]]; then
               echo "::set-output name=create::$(echo 1)"
@@ -107,14 +107,12 @@ jobs:
           HAS_TAGS=$(git tag --sort='creatordate' --merged origin/$BRANCH_NAME)
           if [[ -z $HAS_TAGS ]]; then
               echo "::set-output name=tag::$(echo $INITIAL_TAG)"
-              echo $INITIAL_TAG
           else
               CURRENT_TAG=$(git describe --abbrev=0)
               PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
               MAJOR_MINOR=${CURRENT_TAG%%$n}
               NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
               echo "::set-output name=tag::$(echo $NEW_TAG)"
-              echo $NEW_TAG
           fi
 
       - name: Commit changes

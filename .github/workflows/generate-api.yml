@@ -135,7 +135,7 @@ jobs:
       - name: Tag branch if needed
         if: steps.commit-changes.outputs.committed
         run: |
-          git config ChadSikorra github-actions
+          git config user.name ChadSikorra
           git config user.email Chad.Sikorra@gmail.com
           git tag -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code"
           git push --follow-tags

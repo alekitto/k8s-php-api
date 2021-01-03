@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-#on:
+  #on:
   #schedule:
   #  - cron: '0 0 * * *'
 env:
@@ -98,33 +98,29 @@ jobs:
       - name: Run static analysis
         run: composer analyse
 
+      - name: Generate version tag
+        id: version-tag
+        env:
+          INITIAL_TAG: ${{ steps.api-branch.outputs.branch }}
+        run: |
+          CURRENT_TAG=$(git describe --abbrev=0)
+          if [[ -z $CURRENT_TAG ]]; then
+              echo "::set-output name=tag::$(echo $INITIAL_TAG)"
+          else
+              PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
+              MAJOR_MINOR=${CURRENT_TAG%%$n}
+              NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
+              echo "::set-output name=tag::$(echo $NEW_TAG)"
+          fi
+
       - name: Commit changes
         id: commit-changes
         uses: EndBug/add-and-commit@v6
         with:
           author_name: Chad Sikorra
           author_email: Chad.Sikorra@gmail.com
+          branch: ${{ steps.api-branch.outputs.branch }}
+          tag: ${{ steps.version-tag.outputs.tag }}
           message: 'Auto-generate API code.'
           add: '["src", ".k8s-api.json"]'
           push: true
-
-      - name: Bump version and push tag
-        if: steps.commit-changes.outputs.committed
-        env:
-          INITIAL_TAG: ${{ steps.api-branch.outputs.branch }}
-        run: |
-          git config user.name ChadSikorra
-          git config user.email Chad.Sikorra@gmail.com
-
-          CURRENT_TAG=$(git describe --abbrev=0)
-          if [[ -z $CURRENT_TAG ]]; then
-              git tag $INITIAL_TAG
-          else
-              PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
-              MAJOR_MINOR=${CURRENT_TAG%%$n}
-              NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
-
-              git tag $NEW_TAG
-          fi
-
-          git push --follow-tags

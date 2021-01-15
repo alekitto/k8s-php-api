@@ -9,10 +9,6 @@
             "email": "Chad.Sikorra@gmail.com"
         }
     ],
-    "repositories": [
-        { "type": "vcs", "url": "https://github.com/ChadSikorra/k8s-api-generator.git" },
-        { "type": "vcs", "url": "https://github.com/ChadSikorra/k8s-core.git" }
-    ],
     "require": {
         "php": ">=7.2",
         "k8s/core": "^1.0"

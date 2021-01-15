@@ -160,8 +160,9 @@ jobs:
           else
               CURRENT_TAG=$(git describe --abbrev=0)
               PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
-              MAJOR_MINOR=${CURRENT_TAG%%$n}
-              NEW_TAG=$MAJOR_MINOR$((PATCH_VERSION+1))
+              PATCH_VERSION=${PATCH_VERSION##+(0)}
+              MAJOR_MINOR=$(echo $CURRENT_TAG | sed 's/\.[^.]*$//')
+              NEW_TAG="${MAJOR_MINOR}.$((PATCH_VERSION+1))"
               echo "::set-output name=tag::$(echo $NEW_TAG)"
           fi
 

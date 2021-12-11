@@ -156,8 +156,10 @@ jobs:
         run: |
           HAS_TAGS=$(git tag --sort='creatordate' --merged origin/$BRANCH_NAME)
           if [[ -z $HAS_TAGS ]]; then
+              echo "Using initial tag."
               echo "::set-output name=tag::$(echo $INITIAL_TAG)"
           else
+              echo "Generating new tag."
               CURRENT_TAG=$(git describe --abbrev=0)
               PATCH_VERSION=${CURRENT_TAG##*[!0-9]}
               PATCH_VERSION=${PATCH_VERSION##+(0)}

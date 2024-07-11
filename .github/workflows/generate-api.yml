@@ -15,49 +15,40 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          ref: master
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
-          tools: composer:v2
+          php-version: '8.2'
 
       - name: Get Composer Cache Directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Install Composer dependencies
-        uses: nick-invision/retry@v2
-        with:
-          timeout_seconds: 180
-          max_attempts: 5
-          retry_on: error
-          command: composer install --no-progress --prefer-dist --optimize-autoloader
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - id: set-matrix
         name: Generate API versions matrix
-        run: echo "::set-output name=matrix::$(vendor/bin/k8s-api api-versions --last-n $LAST_N)"
+        run: echo "matrix=$(vendor/bin/k8s-api api-versions --last-n $LAST_N)" >> $GITHUB_OUTPUT
+
   generate-api:
     needs: get-api-versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.get-api-versions.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.get-api-versions.outputs.matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: master
+        uses: actions/checkout@v4
 
       - name: Determine API branch information for ${{ matrix.api-version }}
         id: api-branch
@@ -66,23 +57,23 @@ jobs:
         run: |
           BRANCH_NAME="${API_VERSION%.*}.x"
           INITIAL_TAG="${API_VERSION%.*}.0"
-          echo "::set-output name=branch::$(echo $BRANCH_NAME)"
-          echo "::set-output name=initial_tag::$(echo $INITIAL_TAG)"
+          echo "branch=$(echo $BRANCH_NAME)" >> $GITHUB_OUTPUT
+          echo "initial_tag=$(echo $INITIAL_TAG)" >> $GITHUB_OUTPUT
           remote_exists=$(git ls-remote --heads origin $BRANCH_NAME)
           if [[ -z ${remote_exists} ]]; then
-              echo "::set-output name=create::$(echo 1)"
+              echo "create=$(echo 1)" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Branch if Needed
         if: steps.api-branch.outputs.create
-        uses: peterjgrainger/action-create-branch@v2.0.1
+        uses: peterjgrainger/action-create-branch@v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           branch: ${{ steps.api-branch.outputs.branch }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.api-branch.outputs.branch }}
           fetch-depth: 0
@@ -95,42 +86,35 @@ jobs:
           git merge origin/master
           MERGE_CHANGES=$(git cherry -v)
           if [[ ! -z $MERGE_CHANGES ]]; then
-              echo "::set-output name=merged::$(echo true)"
+              echo "merged=true" >> $GITHUB_OUTPUT
               git push
           else
-              echo "::set-output name=merged::$(echo false)"
+              echo "merged=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout
         if: steps.master-merge.outputs.merged == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.api-branch.outputs.branch }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
-          tools: composer:v2
+          php-version: '8.2'
 
       - name: Get Composer Cache Directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Install Composer dependencies
-        uses: nick-invision/retry@v2
-        with:
-          timeout_seconds: 180
-          max_attempts: 5
-          retry_on: error
-          command: composer install --no-progress --prefer-dist
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Generate API for version ${{ matrix.api-version }}
         id: code-generation
@@ -138,9 +122,9 @@ jobs:
           output=$(vendor/bin/k8s-api generate --api-version ${{ matrix.api-version }})
           echo $output
           if echo "$output" | grep -q "Not generating API for version"; then
-              echo "::set-output name=generated::$(echo false)"
+              echo "generated=false" >> $GITHUB_OUTPUT
           else
-              echo "::set-output name=generated::$(echo true)"
+              echo "generated=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Run static analysis
@@ -157,7 +141,7 @@ jobs:
           HAS_TAGS=$(git tag --sort='creatordate' --merged origin/$BRANCH_NAME)
           if [[ -z $HAS_TAGS ]]; then
               echo "Using initial tag."
-              echo "::set-output name=tag::$(echo $INITIAL_TAG)"
+              echo "tag=$(echo $INITIAL_TAG)" >> $GITHUB_OUTPUT
           else
               echo "Generating new tag."
               CURRENT_TAG=$(git describe --abbrev=0)
@@ -165,16 +149,14 @@ jobs:
               PATCH_VERSION=${PATCH_VERSION##+(0)}
               MAJOR_MINOR=$(echo $CURRENT_TAG | sed 's/\.[^.]*$//')
               NEW_TAG="${MAJOR_MINOR}.$((PATCH_VERSION+1))"
-              echo "::set-output name=tag::$(echo $NEW_TAG)"
+              echo "tag=$(echo $NEW_TAG)" >> $GITHUB_OUTPUT
           fi
 
       - name: Commit changes
         if: steps.code-generation.outputs.generated == 'true'
         id: commit-changes
-        uses: EndBug/add-and-commit@v6
+        uses: EndBug/add-and-commit@v9
         with:
-          author_name: Chad Sikorra
-          author_email: Chad.Sikorra@gmail.com
           branch: ${{ steps.api-branch.outputs.branch }}
           message: Auto-generate API code for ${{ matrix.api-version }}.
           add: '["src", ".k8s-api.json"]'
@@ -182,7 +164,7 @@ jobs:
 
       - name: Checkout branch with new commits
         if: steps.commit-changes.outputs.committed == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.api-branch.outputs.branch }}
 
@@ -191,7 +173,5 @@ jobs:
         env:
           API_VERSION: ${{ matrix.api-version }}
         run: |
-          git config user.name ChadSikorra
-          git config user.email Chad.Sikorra@gmail.com
           git tag -a ${{ steps.version-tag.outputs.tag }} -m "Auto-generate code for $API_VERSION"
           git push --follow-tags

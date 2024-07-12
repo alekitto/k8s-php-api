@@ -9,14 +9,22 @@
             "email": "Chad.Sikorra@gmail.com"
         }
     ],
+    "repositories": [{
+        "type": "github",
+        "url": "https://github.com/alekitto/k8s-php-api-generator.git",
+        "only": [
+            "k8s/api-generator"
+        ]
+    }],
     "require": {
         "php": ">=7.2",
         "k8s/core": "^1.0"
     },
     "require-dev": {
-        "k8s/api-generator": "~0.2",
-        "friendsofphp/php-cs-fixer": "^2.0",
-        "phpstan/phpstan": "^0.12"
+        "k8s/api-generator": "dev-master",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^1.11",
+        "symfony/var-dumper": "*"
     },
     "config": {
         "sort-packages": true

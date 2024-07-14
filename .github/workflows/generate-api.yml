@@ -81,8 +81,8 @@ jobs:
       - name: Merge changes from master
         id: master-merge
         run: |
-          git config user.name ${{ github.event.commits[0].author.name }}
-          git config user.email ${{ github.event.commits[0].author.email }}
+          git config user.name ${{ github.event.commits[0].author.name || 'Alessandro Chitolina' }}
+          git config user.email ${{ github.event.commits[0].author.email || 'alekitto@gmail.com' }}
           git merge origin/master
           MERGE_CHANGES=$(git cherry -v)
           if [[ ! -z $MERGE_CHANGES ]]; then
